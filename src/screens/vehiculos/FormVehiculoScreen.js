@@ -1,102 +1,122 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
-import { launchImageLibrary } from 'react-native-image-picker';
-import { createVehiculo, editVehiculo, updateVehiculoFoto } from '../../api/vehiculos';
+import { View, TextInput, TouchableOpacity, Text, StyleSheet, Image } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import apiClient from '../../services/apiClient';
 import { COLORS, FONTS } from '../../core/theme';
 
-export default function FormVehiculoScreen({ route, navigation }) {
-  const vehiculo = route.params?.vehiculo; // si viene para editar
-  const [placa, setPlaca] = useState(vehiculo?.placa || '');
-  const [chasis, setChasis] = useState(vehiculo?.chasis || '');
-  const [marca, setMarca] = useState(vehiculo?.marca || '');
-  const [modelo, setModelo] = useState(vehiculo?.modelo || '');
-  const [ano, setAno] = useState(vehiculo?.ano?.toString() || '');
-  const [ruedas, setRuedas] = useState(vehiculo?.ruedas?.toString() || '4');
-  const [foto, setFoto] = useState(null);
-
-  const pickImage = () => {
-    launchImageLibrary({ mediaType: 'photo' }, res => {
-      if (!res.didCancel && res.assets?.length) {
-        setFoto(res.assets[0]);
-      }
-    });
-  };
+export default function FormVehiculoScreen({ navigation, route }) {
+  const editing = route.params?.vehiculo || null;
+  const [placa, setPlaca] = useState(editing?.placa || '');
+  const [chasis, setChasis] = useState(editing?.chasis || '');
+  const [marca, setMarca] = useState(editing?.marca || '');
+  const [modelo, setModelo] = useState(editing?.modelo || '');
+  const [anio, setAnio] = useState(editing?.anio?.toString() || '');
+  const [ruedas, setRuedas] = useState(editing?.cantidadRuedas || 4);
+  const [foto, setFoto] = useState(editing?.fotoUrl || null);
 
   const handleSave = async () => {
     if (!placa || !marca || !modelo) {
-      Alert.alert('Error', 'Placa, Marca y Modelo son requeridos');
+      alert('Placa, marca y modelo son requeridos');
       return;
     }
 
     try {
-      if (vehiculo) {
-        // edición
-        await editVehiculo({ id: vehiculo.id, placa, chasis, marca, modelo, ano, ruedas });
-        if (foto) {
-          const fd = new FormData();
-          fd.append('id', vehiculo.id);
-          fd.append('foto', {
-            uri: foto.uri,
-            type: foto.type,
-            name: foto.fileName || 'vehiculo.jpg',
-          });
-          await updateVehiculoFoto(fd);
-        }
-      } else {
-        // creación
-        const fd = new FormData();
-        fd.append('placa', placa);
-        fd.append('chasis', chasis);
-        fd.append('marca', marca);
-        fd.append('modelo', modelo);
-        fd.append('ano', ano);
-        fd.append('ruedas', ruedas);
-        if (foto) {
-          fd.append('foto', {
-            uri: foto.uri,
-            type: foto.type,
-            name: foto.fileName || 'vehiculo.jpg',
-          });
-        }
-        await createVehiculo(fd);
+      const formData = new FormData();
+      formData.append('placa', placa);
+      formData.append('chasis', chasis);
+      formData.append('marca', marca);
+      formData.append('modelo', modelo);
+      formData.append('anio', anio);              // nombre correcto
+      formData.append('cantidadRuedas', ruedas); // nombre correcto
+
+      if (foto) {
+        // Detectar tipo de archivo dinámicamente
+        const extension = foto.split('.').pop();
+        const mimeType = extension === 'png' ? 'image/png'
+                        : extension === 'webp' ? 'image/webp'
+                        : extension === 'heic' ? 'image/heic'
+                        : 'image/jpeg'; // fallback
+
+        formData.append('foto', {
+          uri: foto,
+          type: mimeType,
+          name: `vehiculo.${extension || 'jpg'}`,
+        });
       }
 
-      Alert.alert('Éxito', 'Vehículo guardado correctamente');
-      navigation.goBack(); // regresa y refresca lista
+      if (editing) {
+        await apiClient.post('/vehiculos/editar', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+      } else {
+        await apiClient.post('/vehiculos', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+      }
+
+      navigation.goBack();
     } catch (err) {
-      console.error(err);
-      Alert.alert('Error', 'No se pudo guardar el vehículo');
+      console.error('Error guardando vehículo:', err.response?.data || err.message);
+      alert(err.response?.data?.message || 'Error al guardar vehículo');
+    }
+  };
+
+  const handlePickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    });
+
+    if (!result.canceled) {
+      const asset = result.assets[0];
+      setFoto(asset.uri);
+
+      if (editing) {
+        const extension = asset.uri.split('.').pop();
+        const mimeType = asset.mimeType || 'image/jpeg';
+        const fileName = asset.fileName || `vehiculo.${extension || 'jpg'}`;
+
+        const formData = new FormData();
+        formData.append('foto', {
+          uri: asset.uri,
+          type: mimeType,
+          name: fileName,
+        });
+
+        await apiClient.post('/vehiculos/foto', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+      }
     }
   };
 
   return (
     <View style={s.screen}>
-      <Text style={s.title}>{vehiculo ? 'Editar Vehículo' : 'Nuevo Vehículo'}</Text>
+      <TextInput placeholder="Placa" value={placa} onChangeText={setPlaca} style={s.input} />
+      <TextInput placeholder="Chasis" value={chasis} onChangeText={setChasis} style={s.input} />
+      <TextInput placeholder="Marca" value={marca} onChangeText={setMarca} style={s.input} />
+      <TextInput placeholder="Modelo" value={modelo} onChangeText={setModelo} style={s.input} />
+      <TextInput placeholder="Año" value={anio} onChangeText={setAnio} keyboardType="numeric" style={s.input} />
+      <TextInput placeholder="Cantidad de ruedas" value={ruedas.toString()} onChangeText={(v) => setRuedas(Number(v))} keyboardType="numeric" style={s.input} />
 
-      <TextInput style={s.input} placeholder="Placa" value={placa} onChangeText={setPlaca} />
-      <TextInput style={s.input} placeholder="Chasis" value={chasis} onChangeText={setChasis} />
-      <TextInput style={s.input} placeholder="Marca" value={marca} onChangeText={setMarca} />
-      <TextInput style={s.input} placeholder="Modelo" value={modelo} onChangeText={setModelo} />
-      <TextInput style={s.input} placeholder="Año" keyboardType="numeric" value={ano} onChangeText={setAno} />
-      <TextInput style={s.input} placeholder="Ruedas" keyboardType="numeric" value={ruedas} onChangeText={setRuedas} />
-
-      <TouchableOpacity style={s.btn} onPress={pickImage}>
+      {foto && <Image source={{ uri: foto }} style={s.image} />}
+      <TouchableOpacity style={s.btn} onPress={handlePickImage}>
         <Text style={s.btnText}>Seleccionar Foto</Text>
       </TouchableOpacity>
 
-      {foto && <Image source={{ uri: foto.uri }} style={{ width: 120, height: 80, marginVertical: 10 }} />}
-
-      <TouchableOpacity style={[s.btn, { backgroundColor: COLORS.primary }]} onPress={handleSave}>
-        <Text style={s.btnText}>Guardar</Text>
+      <TouchableOpacity style={s.saveBtn} onPress={handleSave}>
+        <Text style={s.saveText}>{editing ? 'Actualizar' : 'Guardar'}</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
 const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: COLORS.background, padding: 20 },
-  title: { fontSize: FONTS.sizes.lg, fontWeight: '700', color: COLORS.textPrimary, marginBottom: 20 },
-  input: { borderWidth: 1, borderColor: COLORS.border, padding: 10, marginBottom: 10, borderRadius: 6 },
-  btn: { backgroundColor: COLORS.secondary, padding: 15, borderRadius: 6, marginTop: 10, alignItems: 'center' },
-  btnText: { color: COLORS.textLight, fontWeight: '600' },
+  screen: { flex: 1, backgroundColor: COLORS.background, padding: 10 },
+  input: { borderWidth: 1, borderColor: COLORS.border, padding: 10, borderRadius: 6, marginBottom: 10 },
+  image: { width: '100%', height: 150, marginBottom: 10, borderRadius: 6 },
+  btn: { backgroundColor: COLORS.secondary, padding: 12, borderRadius: 6, marginBottom: 10 },
+  btnText: { color: COLORS.textLight, textAlign: 'center', fontWeight: '600' },
+  saveBtn: { backgroundColor: COLORS.primary, padding: 15, borderRadius: 6 },
+  saveText: { color: COLORS.textLight, textAlign: 'center', fontWeight: '700' },
 });
+

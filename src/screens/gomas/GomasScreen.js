@@ -1,59 +1,95 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Modal, StyleSheet, TextInput, Button } from 'react-native';
-import { getGomas, updateGoma, registrarPinchazo } from '../../api/gomas';
+import { View, Text, TouchableOpacity, StyleSheet, Modal, TextInput } from 'react-native';
+import apiClient from '../../services/apiClient';
 import { COLORS, FONTS } from '../../core/theme';
 
 export default function GomasScreen({ route }) {
-  const { vehiculo_id } = route.params;
+  const { vehiculo_id } = route.params || {};
   const [gomas, setGomas] = useState([]);
-  const [selected, setSelected] = useState(null);
-  const [nuevoEstado, setNuevoEstado] = useState('');
+  const [selectedGoma, setSelectedGoma] = useState(null);
+  const [estado, setEstado] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [fecha, setFecha] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
+
+  if (!vehiculo_id) {
+    console.error("❌ No se recibió el parámetro 'vehiculo_id' en GomasScreen");
+    return <Text style={s.error}>Error: No se recibió el ID del vehículo</Text>;
+  }
+
+  // 📌 Endpoint: GET /gomas?vehiculo_id=
+  const fetchGomas = async () => {
+    try {
+      const { data } = await apiClient.get('/gomas', { params: { vehiculo_id } });
+      setGomas(data);
+    } catch (err) {
+      console.error('Error cargando gomas:', err.response?.data || err.message);
+    }
+  };
 
   useEffect(() => { fetchGomas(); }, []);
 
-  const fetchGomas = () => {
-    getGomas(vehiculo_id).then(res => setGomas(res.data)).catch(err => console.error(err));
+  // 📌 Endpoint: POST /gomas/actualizar
+  const actualizarEstado = async () => {
+    try {
+      await apiClient.post('/gomas/actualizar', { goma_id: selectedGoma.id, estado });
+      setModalVisible(false);
+      fetchGomas();
+    } catch (err) {
+      console.error('Error actualizando estado de goma:', err.response?.data || err.message);
+    }
   };
 
-  const colorMap = { Buena: COLORS.success, Regular: COLORS.warning, Mala: COLORS.error, Reemplazada: COLORS.muted };
-
-  const handleActualizar = async () => {
+  // 📌 Endpoint: POST /gomas/pinchazos
+  const registrarPinchazo = async () => {
     try {
-      await updateGoma({ goma_id: selected.id, estado: nuevoEstado });
+      await apiClient.post('/gomas/pinchazos', { goma_id: selectedGoma.id, descripcion, fecha });
+      setModalVisible(false);
       fetchGomas();
-      setSelected(null);
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error('Error registrando pinchazo:', err.response?.data || err.message);
+    }
   };
 
-  const handlePinchazo = async () => {
-    try {
-      await registrarPinchazo({ goma_id: selected.id, descripcion, fecha });
-      fetchGomas();
-      setSelected(null);
-    } catch (err) { console.error(err); }
+  const getColor = (estado) => {
+    switch (estado) {
+      case 'Buena': return COLORS.success;
+      case 'Regular': return COLORS.warning;
+      case 'Mala': return COLORS.danger;
+      case 'Reemplazada': return COLORS.textMuted;
+      default: return COLORS.border;
+    }
   };
 
   return (
     <View style={s.screen}>
-      {gomas.map(goma => (
-        <TouchableOpacity key={goma.id} style={[s.goma, { backgroundColor: colorMap[goma.estado] }]} onPress={() => setSelected(goma)}>
-          <Text style={s.gomaText}>{goma.posicion}</Text>
+      {gomas.map((goma) => (
+        <TouchableOpacity
+          key={goma.id}
+          style={[s.goma, { backgroundColor: getColor(goma.estado) }]}
+          onPress={() => { setSelectedGoma(goma); setModalVisible(true); }}
+        >
+          <Text style={s.gomaText}>{goma.posicion} ({goma.estado})</Text>
         </TouchableOpacity>
       ))}
 
-      <Modal visible={!!selected} transparent animationType="slide">
+      <Modal visible={modalVisible} animationType="slide">
         <View style={s.modal}>
-          <Text style={s.modalTitle}>Estado actual: {selected?.estado}</Text>
-          <TextInput placeholder="Nuevo estado (Buena/Regular/Mala/Reemplazada)" value={nuevoEstado} onChangeText={setNuevoEstado} style={s.input} />
-          <Button title="Actualizar Estado" onPress={handleActualizar} />
+          <Text style={s.modalTitle}>Actualizar {selectedGoma?.posicion}</Text>
+          <TextInput placeholder="Nuevo estado" value={estado} onChangeText={setEstado} style={s.input} />
+          <TouchableOpacity style={s.btn} onPress={actualizarEstado}>
+            <Text style={s.btnText}>Actualizar Estado</Text>
+          </TouchableOpacity>
 
-          <TextInput placeholder="Descripción pinchazo" value={descripcion} onChangeText={setDescripcion} style={s.input} />
-          <TextInput placeholder="Fecha pinchazo (YYYY-MM-DD)" value={fecha} onChangeText={setFecha} style={s.input} />
-          <Button title="Registrar Pinchazo" onPress={handlePinchazo} />
+          <TextInput placeholder="Descripción del pinchazo" value={descripcion} onChangeText={setDescripcion} style={s.input} />
+          <TextInput placeholder="Fecha (YYYY-MM-DD)" value={fecha} onChangeText={setFecha} style={s.input} />
+          <TouchableOpacity style={s.btn} onPress={registrarPinchazo}>
+            <Text style={s.btnText}>Registrar Pinchazo</Text>
+          </TouchableOpacity>
 
-          <Button title="Cerrar" onPress={() => setSelected(null)} />
+          <TouchableOpacity style={s.closeBtn} onPress={() => setModalVisible(false)}>
+            <Text style={s.closeText}>Cerrar</Text>
+          </TouchableOpacity>
         </View>
       </Modal>
     </View>
@@ -61,10 +97,15 @@ export default function GomasScreen({ route }) {
 }
 
 const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: COLORS.background, padding: 20, flexDirection: 'row', flexWrap: 'wrap' },
-  goma: { width: '45%', height: 80, margin: 5, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
-  gomaText: { color: COLORS.textLight, fontWeight: '700' },
-  modal: { flex: 1, backgroundColor: 'white', margin: 20, padding: 20, borderRadius: 8, justifyContent: 'center' },
+  screen: { flex: 1, backgroundColor: COLORS.background, padding: 10 },
+  error: { textAlign: 'center', marginTop: 20, color: COLORS.danger },
+  goma: { padding: 15, borderRadius: 6, marginBottom: 10 },
+  gomaText: { color: COLORS.textLight, fontWeight: '600' },
+  modal: { flex: 1, justifyContent: 'center', padding: 20, backgroundColor: COLORS.background },
   modalTitle: { fontSize: FONTS.sizes.md, fontWeight: '700', marginBottom: 10 },
-  input: { borderWidth: 1, borderColor: COLORS.border, padding: 10, marginBottom: 10, borderRadius: 6 },
+  input: { borderWidth: 1, borderColor: COLORS.border, padding: 10, borderRadius: 6, marginBottom: 10 },
+  btn: { backgroundColor: COLORS.primary, padding: 12, borderRadius: 6, marginBottom: 10 },
+  btnText: { color: COLORS.textLight, textAlign: 'center', fontWeight: '600' },
+  closeBtn: { backgroundColor: COLORS.danger, padding: 12, borderRadius: 6 },
+  closeText: { color: COLORS.textLight, textAlign: 'center', fontWeight: '600' },
 });

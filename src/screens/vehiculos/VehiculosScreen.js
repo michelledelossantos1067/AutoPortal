@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, TextInput, FlatList, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import FastImage from 'react-native-fast-image';
-import { getVehiculos } from '../../api/vehiculos';
+import { View, TextInput, FlatList, TouchableOpacity, Text, StyleSheet, Image } from 'react-native';
+import apiClient from '../../services/apiClient';
 import { COLORS, FONTS } from '../../core/theme';
 
 export default function VehiculosScreen({ navigation }) {
@@ -12,10 +11,12 @@ export default function VehiculosScreen({ navigation }) {
 
   const fetchVehiculos = async (marca = '', modelo = '', pageNum = 1) => {
     try {
-      const { data } = await getVehiculos({ marca, modelo, page: pageNum, limit: 10 });
+      const { data } = await apiClient.get('/vehiculos', {
+        params: { marca, modelo, page: pageNum, limit: 10 },
+      });
       setVehiculos(pageNum === 1 ? data : [...vehiculos, ...data]);
     } catch (err) {
-      console.error(err);
+      console.error('Error cargando vehículos:', err);
     }
   };
 
@@ -38,8 +39,8 @@ export default function VehiculosScreen({ navigation }) {
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <TouchableOpacity style={s.card} onPress={() => navigation.navigate('DetalleVehiculo', { id: item.id })}>
-            <FastImage source={{ uri: item.foto }} style={s.image} />
-            <Text style={s.cardTitle}>{item.marca} {item.modelo} ({item.ano})</Text>
+            <Image source={{ uri: item.fotoUrl }} style={s.image} />
+            <Text style={s.cardTitle}>{item.marca} {item.modelo} ({item.anio})</Text>
             <Text style={s.cardSub}>Placa: {item.placa}</Text>
           </TouchableOpacity>
         )}
