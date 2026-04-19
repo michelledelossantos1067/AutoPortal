@@ -6,7 +6,7 @@ import { useAuth } from '../../store/AuthContext';
 import { COLORS, FONTS, SPACING } from '../../core/theme';
 
 export default function CrearTemaScreen({ navigation }) {
-  const { usuario } = useAuth();
+  const { usuario, isLoggedIn } = useAuth();
   const [titulo, setTitulo] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [vehiculoId, setVehiculoId] = useState('');
@@ -25,6 +25,12 @@ export default function CrearTemaScreen({ navigation }) {
   useEffect(() => { fetchVehiculos(); }, []);
 
   const handleCreate = async () => {
+    if (!isLoggedIn) {
+      Alert.alert('Error', 'Debes iniciar sesión para crear un tema');
+      navigation.navigate('Auth', { screen: 'Login' });
+      return;
+    }
+
     if (!titulo.trim() || !descripcion.trim() || !vehiculoId) {
       Alert.alert('Error', 'Título, descripción y vehículo son requeridos');
       return;
@@ -54,6 +60,20 @@ export default function CrearTemaScreen({ navigation }) {
       setLoading(false);
     }
   };
+
+  if (!isLoggedIn) {
+    return (
+      <View style={s.center}>
+        <Text style={s.empty}>Debes iniciar sesión para crear un tema.</Text>
+        <TouchableOpacity
+          style={s.loginButton}
+          onPress={() => navigation.navigate('Auth', { screen: 'Login' })}
+        >
+          <Text style={s.loginButtonText}>Iniciar sesión</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={s.screen} contentContainerStyle={s.container}>
@@ -148,4 +168,13 @@ const s = StyleSheet.create({
   },
   buttonDisabled: { backgroundColor: COLORS.textMuted },
   buttonText: { color: COLORS.surface, fontSize: FONTS.sizes.md, fontWeight: '600' },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: SPACING.lg },
+  empty: { fontSize: FONTS.sizes.md, color: COLORS.textMuted, marginBottom: SPACING.lg, textAlign: 'center' },
+  loginButton: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.sm,
+    borderRadius: 8,
+  },
+  loginButtonText: { color: COLORS.surface, fontSize: FONTS.sizes.sm, fontWeight: '600' },
 });

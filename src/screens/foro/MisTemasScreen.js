@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { useAuth } from '../../store/AuthContext';
 import apiClient from '../../services/apiClient';
 import { fromJson } from '../../models/foroTema';
 import { COLORS, FONTS, SPACING } from '../../core/theme';
 import { formatDate } from '../../utils/format';
 
 export default function MisTemasScreen({ navigation }) {
+  const { isLoggedIn } = useAuth();
   const [temas, setTemas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -28,7 +30,13 @@ export default function MisTemasScreen({ navigation }) {
     }
   };
 
-  useEffect(() => { fetchMisTemas(); }, []);
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchMisTemas();
+    } else {
+      setLoading(false);
+    }
+  }, [isLoggedIn]);
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
@@ -48,6 +56,20 @@ export default function MisTemasScreen({ navigation }) {
       </View>
     </TouchableOpacity>
   );
+
+  if (!isLoggedIn) {
+    return (
+      <View style={s.center}>
+        <Text style={s.empty}>Debes iniciar sesión para ver tu historial de temas.</Text>
+        <TouchableOpacity
+          style={s.loginButton}
+          onPress={() => navigation.navigate('Auth', { screen: 'Login' })}
+        >
+          <Text style={s.loginButtonText}>Iniciar sesión</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   if (loading && temas.length === 0) {
     return (
@@ -133,4 +155,11 @@ const s = StyleSheet.create({
     elevation: 5,
   },
   fabText: { fontSize: FONTS.sizes.lg, color: COLORS.surface, fontWeight: 'bold' },
+  loginButton: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.sm,
+    borderRadius: 8,
+  },
+  loginButtonText: { color: COLORS.surface, fontSize: FONTS.sizes.sm, fontWeight: '600' },
 });

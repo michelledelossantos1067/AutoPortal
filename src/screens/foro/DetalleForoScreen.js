@@ -2,12 +2,14 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, TextInput } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import apiClient from '../../services/apiClient';
+import { useAuth } from '../../store/AuthContext';
 import { COLORS, FONTS, SPACING } from '../../core/theme';
 import { formatDate } from '../../utils/format';
 import { fromJson } from '../../models/foroTema';
 
 export default function DetalleForoScreen({ route, navigation }) {
   const { id } = route.params;
+  const { isLoggedIn } = useAuth();
   const [tema, setTema] = useState(null);
   const [loading, setLoading] = useState(true);
   const [replyText, setReplyText] = useState('');
@@ -110,25 +112,37 @@ export default function DetalleForoScreen({ route, navigation }) {
           </View>
         }
       />
-      <View style={s.replyContainer}>
-        <TextInput
-          style={s.replyInput}
-          placeholder="Escribe tu respuesta..."
-          value={replyText}
-          onChangeText={setReplyText}
-          multiline
-          numberOfLines={3}
-        />
-        <TouchableOpacity
-          style={[s.replyButton, (!replyText.trim() || replying) && s.replyButtonDisabled]}
-          onPress={handleReply}
-          disabled={!replyText.trim() || replying}
-        >
-          <Text style={s.replyButtonText}>
-            {replying ? 'Enviando...' : 'Responder'}
-          </Text>
-        </TouchableOpacity>
-      </View>
+      {isLoggedIn ? (
+        <View style={s.replyContainer}>
+          <TextInput
+            style={s.replyInput}
+            placeholder="Escribe tu respuesta..."
+            value={replyText}
+            onChangeText={setReplyText}
+            multiline
+            numberOfLines={3}
+          />
+          <TouchableOpacity
+            style={[s.replyButton, (!replyText.trim() || replying) && s.replyButtonDisabled]}
+            onPress={handleReply}
+            disabled={!replyText.trim() || replying}
+          >
+            <Text style={s.replyButtonText}>
+              {replying ? 'Enviando...' : 'Responder'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <View style={s.loginPrompt}>
+          <Text style={s.loginPromptText}>Debes iniciar sesión para responder este tema.</Text>
+          <TouchableOpacity
+            style={s.loginPromptButton}
+            onPress={() => navigation.navigate('Auth', { screen: 'Login' })}
+          >
+            <Text style={s.loginPromptButtonText}>Iniciar sesión</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 }
@@ -194,4 +208,28 @@ const s = StyleSheet.create({
   },
   replyButtonDisabled: { backgroundColor: COLORS.textMuted },
   replyButtonText: { color: COLORS.surface, fontSize: FONTS.sizes.sm, fontWeight: '600' },
+  loginPrompt: {
+    padding: SPACING.md,
+    backgroundColor: COLORS.surface,
+    margin: SPACING.sm,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  loginPromptText: {
+    fontSize: FONTS.sizes.sm,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    marginBottom: SPACING.sm,
+  },
+  loginPromptButton: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.sm,
+    borderRadius: 8,
+  },
+  loginPromptButtonText: {
+    color: COLORS.surface,
+    fontSize: FONTS.sizes.sm,
+    fontWeight: '600',
+  },
 });

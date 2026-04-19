@@ -33,25 +33,19 @@ export default function ForoScreen({ navigation, route }) {
   };
 
   useEffect(() => {
-    if (isLoggedIn) {
-      fetchTemas();
-    } else {
-      setLoading(false);
-    }
-  }, [isLoggedIn]);
+    fetchTemas(1);
+  }, []);
 
   // Refresh list every time this screen comes into focus
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       console.log('ForoScreen enfocado - recargando temas');
-      if (isLoggedIn) {
-        setPage(1);
-        fetchTemas(1);
-      }
+      setPage(1);
+      fetchTemas(1);
     });
 
     return unsubscribe;
-  }, [navigation, isLoggedIn]);
+  }, [navigation]);
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
@@ -72,25 +66,6 @@ export default function ForoScreen({ navigation, route }) {
       </View>
     </TouchableOpacity>
   );
-
-  if (!isLoggedIn) {
-    return (
-      <View style={s.screen}>
-        <View style={s.guestPanel}>
-          <Text style={s.guestTitle}>Debe iniciar sesión</Text>
-          <Text style={s.guestText}>
-            Para ver y participar en el foro, necesitas iniciar sesión.
-          </Text>
-          <TouchableOpacity
-            style={s.loginButton}
-            onPress={() => navigation.navigate('Auth', { screen: 'Login' })}
-          >
-            <Text style={s.loginButtonText}>Iniciar sesión</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  }
 
   if (loading && temas.length === 0) {
     return (
@@ -114,9 +89,20 @@ export default function ForoScreen({ navigation, route }) {
           </View>
         }
       />
+      {!isLoggedIn && (
+        <View style={s.loginPrompt}>
+          <Text style={s.loginPromptText}>Inicia sesión para crear temas y responder.</Text>
+          <TouchableOpacity
+            style={s.loginPromptButton}
+            onPress={() => navigation.navigate('Auth', { screen: 'Login' })}
+          >
+            <Text style={s.loginPromptButtonText}>Iniciar sesión</Text>
+          </TouchableOpacity>
+        </View>
+      )}
       <TouchableOpacity
         style={s.fab}
-        onPress={() => navigation.navigate('CrearTema')}
+        onPress={() => isLoggedIn ? navigation.navigate('CrearTema') : navigation.navigate('Auth', { screen: 'Login' })}
       >
         <Text style={s.fabText}>+</Text>
       </TouchableOpacity>
@@ -164,6 +150,27 @@ const s = StyleSheet.create({
     elevation: 5,
   },
   fabText: { fontSize: FONTS.sizes.lg, color: COLORS.surface, fontWeight: 'bold' },
+  loginPrompt: {
+    padding: SPACING.md,
+    marginHorizontal: SPACING.sm,
+    borderRadius: 8,
+    backgroundColor: COLORS.surface,
+    alignItems: 'center',
+    marginBottom: SPACING.sm,
+  },
+  loginPromptText: {
+    fontSize: FONTS.sizes.sm,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    marginBottom: SPACING.sm,
+  },
+  loginPromptButton: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.sm,
+    borderRadius: 8,
+  },
+  loginPromptButtonText: { color: COLORS.surface, fontSize: FONTS.sizes.sm, fontWeight: '600' },
   guestPanel: {
     flex: 1,
     justifyContent: 'center',
