@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  ScrollView,
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image
-} from 'react-native';
+import { ScrollView, View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 
 import { COLORS, FONTS } from '../../core/theme';
 import { useAuth } from '../../store/AuthContext';
@@ -16,8 +9,8 @@ export default function HomeScreen({ navigation }) {
   const { isLoggedIn, usuario } = useAuth();
 
   return (
-    <ScrollView contentContainerStyle={s.screen}>
-      <Text style={s.title}>AutoZone</Text>
+    <ScrollView contentContainerStyle={s.screen} >
+      <Text style={s.title}>AutoPortal</Text>
 
 
       {isLoggedIn && usuario && (
@@ -25,18 +18,18 @@ export default function HomeScreen({ navigation }) {
           <Image source={{ uri: usuario.fotoUrl }} style={s.avatar} />
           <Text style={s.username}>{usuario.nombre}</Text>
 
-
-          <CarSlider />
         </>
       )}
 
 
       <View style={s.menuContainer}>
 
+        <CarSlider />
+
         {!isLoggedIn && (
           <>
             <TouchableOpacity
-              style={[s.button, s.primaryButton]}
+              style={[s.button]}
               onPress={() => navigation.navigate('Auth', { screen: 'Login' })}
             >
               <Text style={[s.buttonText, s.primaryButtonText]}>
@@ -68,10 +61,11 @@ export default function HomeScreen({ navigation }) {
               style={s.button}
               onPress={() => navigation.navigate('Vehiculos')}
             >
-              <Text style={s.buttonText}>Mis Vehículos</Text>
+              <Text style={s.buttonText}>Mis Vehiculos</Text>
             </TouchableOpacity>
           </>
         )}
+
 
         <TouchableOpacity
           style={s.button}
@@ -91,7 +85,7 @@ export default function HomeScreen({ navigation }) {
           style={s.button}
           onPress={() => navigation.navigate('Catalogo')}
         >
-          <Text style={s.buttonText}>Catálogo</Text>
+          <Text style={s.buttonText}>Catalogo</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -119,7 +113,8 @@ const s = StyleSheet.create({
     backgroundColor: COLORS.background,
     alignItems: 'center',
     paddingVertical: 20,
-    paddingHorizontal: 16
+    paddingHorizontal: 16,
+    paddingBottom: 65
   },
 
   title: {

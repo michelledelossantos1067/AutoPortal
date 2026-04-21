@@ -122,6 +122,7 @@ export default function DetalleForoScreen({ route, navigation }) {
             onChangeText={setReplyText}
             multiline
             numberOfLines={3}
+            placeholderTextColor={COLORS.textMuted || '#110101'}
           />
           <TouchableOpacity
             style={[s.replyButton, (!replyText.trim() || replying) && s.replyButtonDisabled]}
@@ -189,6 +190,8 @@ const s = StyleSheet.create({
     padding: SPACING.md,
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
+    paddingBottom: 50
+
   },
   replyInput: {
     borderWidth: 1,

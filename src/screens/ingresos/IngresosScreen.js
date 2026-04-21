@@ -88,9 +88,9 @@ export default function Ingresos({ route }) {
 
             <Text style={s.modalTitle}>Registrar Ingreso</Text>
 
-            <TextInput style={s.input} placeholder="Monto" keyboardType="numeric" value={monto} onChangeText={setMonto} />
+            <TextInput style={s.input} placeholder="Monto" keyboardType="numeric" value={monto} onChangeText={setMonto} placeholderTextColor={COLORS.textMuted || '#110101'}/>
 
-            <TextInput style={s.input} placeholder="Concepto" value={concepto} onChangeText={setConcepto} />
+            <TextInput style={s.input} placeholder="Concepto" value={concepto} onChangeText={setConcepto} placeholderTextColor={COLORS.textMuted || '#110101'}/>
 
             <View style={s.modalActions}>
               <TouchableOpacity style={[s.botonAccion, s.btnPrimary]} onPress={guardarIngreso}>

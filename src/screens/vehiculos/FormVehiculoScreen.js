@@ -108,12 +108,12 @@ export default function FormVehiculoScreen({ navigation, route }) {
           {editing ? 'Editar Vehículo' : 'Nuevo Vehículo'}
         </Text>
 
-        <TextInput placeholder="Placa" value={placa} onChangeText={setPlaca} style={s.input} />
-        <TextInput placeholder="Chasis" value={chasis} onChangeText={setChasis} style={s.input} />
-        <TextInput placeholder="Marca" value={marca} onChangeText={setMarca} style={s.input} />
-        <TextInput placeholder="Modelo" value={modelo} onChangeText={setModelo} style={s.input} />
-        <TextInput placeholder="Año" value={anio} onChangeText={setAnio} keyboardType="numeric" style={s.input} />
-        <TextInput placeholder="Cantidad de ruedas" value={ruedas.toString()} onChangeText={(v) => setRuedas(Number(v))} keyboardType="numeric" style={s.input} />
+        <TextInput placeholder="Placa" value={placa} onChangeText={setPlaca} style={s.input} placeholderTextColor={COLORS.textMuted || '#110101'}/>
+        <TextInput placeholder="Chasis" value={chasis} onChangeText={setChasis} style={s.input} placeholderTextColor={COLORS.textMuted || '#110101'}/>
+        <TextInput placeholder="Marca" value={marca} onChangeText={setMarca} style={s.input} placeholderTextColor={COLORS.textMuted || '#110101'}/>
+        <TextInput placeholder="Modelo" value={modelo} onChangeText={setModelo} style={s.input} placeholderTextColor={COLORS.textMuted || '#110101'}/>
+        <TextInput placeholder="Año" value={anio} onChangeText={setAnio} keyboardType="numeric" style={s.input} placeholderTextColor={COLORS.textMuted || '#110101'}/>
+        <TextInput placeholder="Cantidad de ruedas" value={ruedas.toString()} onChangeText={(v) => setRuedas(Number(v))} keyboardType="numeric" style={s.input} placeholderTextColor={COLORS.textMuted || '#110101'}/>
 
         {foto && <Image source={{ uri: foto }} style={s.image} />}
 

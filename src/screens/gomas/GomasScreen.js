@@ -57,12 +57,18 @@ export default function GomasScreen({ route }) {
       return;
     }
 
+    const fechaLimpia = (fecha || '').toString().trim();
+    const regexFecha = /^\d{4}-\d{2}-\d{2}$/;
+    const fechaFinal = regexFecha.test(fechaLimpia)
+      ? fechaLimpia
+      : new Date().toISOString().split('T')[0];
+
     try {
       const formData = new FormData();
       formData.append('datax', JSON.stringify({
-        goma_id: selectedGoma.id,
+        goma_id: Number(selectedGoma.id),
         descripcion: descripcion.trim(),
-        fecha: fecha.trim()
+        fecha: fechaFinal
       }));
 
       await apiClient.post('/gomas/pinchazos', formData, {
@@ -106,14 +112,14 @@ export default function GomasScreen({ route }) {
           <View style={s.modalView}>
             <Text style={s.modalTitle}>Actualizar {selectedGoma?.posicion}</Text>
 
-            <TextInput placeholder="Nuevo estado" value={estado} onChangeText={setEstado} style={s.input} />
+            <TextInput placeholder="Nuevo estado" value={estado} onChangeText={setEstado} style={s.input} placeholderTextColor={COLORS.textMuted || '#110101'} />
 
             <TouchableOpacity style={[s.btn, s.btnPrimary]} onPress={actualizarEstado}>
               <Text style={s.btnText}>Actualizar Estado</Text>
             </TouchableOpacity>
 
-            <TextInput placeholder="Descripción del pinchazo" value={descripcion} onChangeText={setDescripcion} style={s.input} />
-            <TextInput placeholder="Fecha (YYYY-MM-DD)" value={fecha} onChangeText={setFecha} style={s.input} />
+            <TextInput placeholder="Descripción del pinchazo" value={descripcion} onChangeText={setDescripcion} style={s.input} placeholderTextColor={COLORS.textMuted || '#110101'} />
+            <TextInput placeholder="Fecha (AAAA-MM-DD)" value={fecha} onChangeText={setFecha} style={s.input} placeholderTextColor={COLORS.textMuted || '#110101'} />
 
             <TouchableOpacity style={s.btn} onPress={registrarPinchazo}>
               <Text style={s.btnText}>Registrar Pinchazo</Text>

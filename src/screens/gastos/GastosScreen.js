@@ -72,7 +72,6 @@ export default function GastosScreen({ route }) {
     fetchGastos(1);
   }, [filtroCategoria]);
 
-  // 🔹 GUARDAR
   const guardarGasto = async () => {
     if (!categoria_id || !monto) {
       alert("Debe seleccionar categoría y monto");
@@ -106,16 +105,15 @@ export default function GastosScreen({ route }) {
   return (
     <View style={s.screen}>
 
-      {/* MODAL */}
       <Modal transparent visible={modalVisible} animationType="fade">
         <View style={s.centeredView}>
           <View style={s.modalView}>
 
             <Text style={s.modalTitle}>Registrar Gasto</Text>
 
-            <TextInput style={s.input} placeholder="Monto" keyboardType="numeric" value={monto} onChangeText={setMonto}/>
+            <TextInput style={s.input} placeholder="Monto" keyboardType="numeric" value={monto} onChangeText={setMonto} placeholderTextColor={COLORS.textMuted || '#110101'}/>
 
-            <TextInput style={s.input} placeholder="Descripción" value={descripcion} onChangeText={setDescripcion}/>
+            <TextInput style={s.input} placeholder="Descripción" value={descripcion} onChangeText={setDescripcion} placeholderTextColor={COLORS.textMuted || '#110101'}/>
 
             <Text style={s.label}>Categoría</Text>
 
@@ -158,7 +156,7 @@ export default function GastosScreen({ route }) {
         </View>
       </Modal>
 
-      {/* CARD */}
+
       <View style={s.mainCard}>
         <Text style={s.headerTitle}>Gastos</Text>
 

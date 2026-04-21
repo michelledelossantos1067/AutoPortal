@@ -5,7 +5,7 @@ import { useAuth } from '../../store/AuthContext';
 import apiClient from '../../services/apiClient';
 import { COLORS, FONTS } from '../../core/theme';
 
-export default function PerfilScreen() {
+export default function PerfilScreen({navigation}) {
 
   const { usuario, updateUsuario } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -109,6 +109,10 @@ export default function PerfilScreen() {
 
         <TouchableOpacity disabled={loading} style={s.buttonOutline} onPress={abrirGaleria}>
           <Text style={s.buttonOutlineText}>Elegir de Galería</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity disabled={loading} style={s.button} onPress={() => navigation.navigate('Cambiar Contraseña')}>
+          {loading ? <ActivityIndicator color="#fff" /> : <Text style={s.buttonText}>Cambiar Clave</Text>}
         </TouchableOpacity>
 
       </View>

@@ -1,12 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../../services/apiClient';
-import {
-  ScrollView,
-  View,
-  Text,
-  StyleSheet,
-  Image
-} from 'react-native';
+import { ScrollView, View, Text, StyleSheet, Image } from 'react-native';
 import { COLORS, FONTS } from '../../core/theme';
 
 export default function DetalleMantenimientoScreen({ route }) {
@@ -46,7 +40,6 @@ export default function DetalleMantenimientoScreen({ route }) {
     <ScrollView contentContainerStyle={s.container}>
       <View style={s.card}>
 
-        {/* GALERÍA */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}

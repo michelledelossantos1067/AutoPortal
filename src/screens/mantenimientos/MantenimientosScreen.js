@@ -52,25 +52,31 @@ export default function MantenimientoScreen({ route, navigation }) {
         Alert.alert("Límite", "Maximo de 5 imagenes alcanzados.");
         return;
       }
-
       setFotosNuevas(nuevas);
     }
   };
 
   const guardarTodo = async () => {
-    if (!vehiculo_id || !tipo) {
+    if (!vehiculo_id || !tipo.trim()) {
       Alert.alert("Error", "El ID del vehículo y el tipo son obligatorios.");
       return;
     }
+
+    const tipoMantenimiento = tipo.trim();
+    const fechaLimpia = (fecha || '').toString().trim();
+    const regexFecha = /^\d{4}-\d{2}-\d{2}$/;
+    const fechaFinal = regexFecha.test(fechaLimpia)
+      ? fechaLimpia
+      : new Date().toISOString().split('T')[0];
 
     try {
       setLoading(true);
       const dataMantenimiento = {
         vehiculo_id: Number(vehiculo_id),
-        tipo: tipo.trim(),
+        tipo: tipoMantenimiento,
         costo: parseFloat(costo) || 0,
         piezas: piezas.trim() || "",
-        fecha: fecha.trim() || new Date().toISOString().split('T')[0]
+        fecha: fechaFinal
       };
 
       const formData = new FormData();
@@ -119,10 +125,10 @@ export default function MantenimientoScreen({ route, navigation }) {
           <View style={s.modalView}>
             <Text style={s.modalTitle}>Registrar Mantenimiento</Text>
 
-            <TextInput style={s.input} placeholder='Tipo (Ej: Aceite)' value={tipo} onChangeText={setTipo} />
-            <TextInput style={s.input} keyboardType='numeric' placeholder='Costo' value={costo} onChangeText={setCosto} />
-            <TextInput style={s.input} placeholder='Piezas' value={piezas} onChangeText={setPiezas} />
-            <TextInput style={s.input} placeholder='Fecha (AAAA-MM-DD)' value={fecha} onChangeText={setFecha} />
+            <TextInput style={s.input} placeholder='Tipo (Ej: Aceite)' value={tipo} onChangeText={setTipo} placeholderTextColor={COLORS.textMuted || '#110101'} />
+            <TextInput style={s.input} keyboardType='numeric' placeholder='Costo' value={costo} onChangeText={setCosto} placeholderTextColor={COLORS.textMuted || '#110101'} />
+            <TextInput style={s.input} placeholder='Piezas' value={piezas} onChangeText={setPiezas} placeholderTextColor={COLORS.textMuted || '#110101'} />
+            <TextInput style={s.input} placeholder='Fecha (AAAA-MM-DD)' value={fecha} onChangeText={setFecha} placeholderTextColor={COLORS.textMuted || '#110101'} />
 
             <View style={s.previewContainer}>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
@@ -165,7 +171,7 @@ export default function MantenimientoScreen({ route, navigation }) {
         <Text style={s.headerTitle}>Mantenimiento</Text>
 
         <View style={s.searchSection}>
-          <TextInput style={s.inputBuscador} placeholder="Filtrar por tipo (Ej: aceite)" value={filtroTipo} onChangeText={setFiltroTipo} />
+          <TextInput style={s.inputBuscador} placeholder="Filtrar por tipo" value={filtroTipo} onChangeText={setFiltroTipo} placeholderTextColor={COLORS.textMuted || '#110101'} />
 
           <TouchableOpacity style={s.botonBuscar} onPress={() => setVisible(true)}>
             <Text style={s.textWhite}>+ Agregar Mantenimiento</Text>

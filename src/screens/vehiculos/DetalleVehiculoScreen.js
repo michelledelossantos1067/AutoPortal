@@ -15,28 +15,30 @@ export default function DetalleVehiculoScreen({ route, navigation }) {
     return <Text style={s.error}>Error: No se recibió el ID del vehículo</Text>;
   }
 
-  const fetchDetalle = async () => {
+  const fetchDetalle = useCallback(async () => {
+    if (!id) return;
     try {
       const { data } = await apiClient.get('/vehiculos/detalle', { params: { id } });
       setVehiculo(data.data);
-      setVehiculo(data.data);
     } catch (err) {
-      console.error('Error cargando detalle del vehiculo:', err.response?.data || err.message);
+      console.error('Error cargando detalle:', err.response?.data || err.message);
     }
-  };
-
-  useEffect(() => { fetchDetalle(); }, []);
-
-  useEffect(() => {
-    fetchDetalle();
-  }, []);
+  }, [id]);
 
   useFocusEffect(
     useCallback(() => {
       fetchDetalle();
-    }, [])
+    }, [fetchDetalle])
   );
 
+  if (!id) {
+    return <Text style={s.error}>Error: No se recibió el ID del vehículo</Text>;
+  }
+
+  if (!vehiculo) {
+    return <Text style={s.loading}>Cargando detalle...</Text>;
+  }
+  
   if (!vehiculo) {
     return <Text style={s.loading}>Cargando detalle...</Text>;
   }
@@ -44,7 +46,7 @@ export default function DetalleVehiculoScreen({ route, navigation }) {
   const resumen = vehiculo.resumen || {};
 
   return (
-    <ScrollView style={s.screen}>
+    <ScrollView style={s.screen} contentContainerStyle={{ paddingBottom: 80 }}>
       {vehiculo.fotoUrl && <Image source={{ uri: vehiculo.fotoUrl }} style={s.image} />}
       <Text style={s.title}>{vehiculo.marca} {vehiculo.modelo} ({vehiculo.anio})</Text>
       <Text style={s.sub}>Placa: {vehiculo.placa}</Text>
@@ -107,7 +109,7 @@ export default function DetalleVehiculoScreen({ route, navigation }) {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={s.btn}
+          style={[s.btn, { width: '100%' }]}
           onPress={() => {
             console.log("➡ Navegando a ingresos/", vehiculo.id);
             navigation.navigate('Ingresos', { vehiculo_id: vehiculo.id });
@@ -198,7 +200,7 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginTop: 20
+    marginTop: 20,
   },
 
   btn: {
@@ -223,7 +225,7 @@ const s = StyleSheet.create({
     borderRadius: 15,
     marginTop: 25,
     alignItems: 'center',
-    elevation: 4
+    elevation: 4,
   },
 
   editText: {

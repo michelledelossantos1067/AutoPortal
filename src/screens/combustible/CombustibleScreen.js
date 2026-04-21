@@ -91,10 +91,10 @@ export default function CombustibleScreen({ route }) {
           <View style={s.modalView}>
             <Text style={s.modalTitle}>Registrar Combustible</Text>
 
-            <TextInput placeholder="Tipo (Gasolina, Gasoil)" value={tipo} onChangeText={setTipo} style={s.input} />
-            <TextInput placeholder="Cantidad" value={cantidad} onChangeText={setCantidad} keyboardType="numeric" style={s.input} />
-            <TextInput placeholder="Unidad (Litros)" value={unidad} onChangeText={setUnidad} style={s.input} />
-            <TextInput placeholder="Monto" value={monto} onChangeText={setMonto} keyboardType="numeric" style={s.input} />
+            <TextInput placeholder="Tipo (aceite/combustible)" value={tipo} onChangeText={setTipo} style={s.input} placeholderTextColor={COLORS.textMuted || '#110101'}/>
+            <TextInput placeholder="Cantidad" value={cantidad} onChangeText={setCantidad} keyboardType="numeric" style={s.input} placeholderTextColor={COLORS.textMuted || '#110101'}/>
+            <TextInput placeholder="Unidad (Litros)" value={unidad} onChangeText={setUnidad} style={s.input} placeholderTextColor={COLORS.textMuted || '#110101'}/>
+            <TextInput placeholder="Monto" value={monto} onChangeText={setMonto} keyboardType="numeric" style={s.input} placeholderTextColor={COLORS.textMuted || '#110101'}/>
 
             <TouchableOpacity style={[s.btn, s.btnPrimary]} onPress={guardarCombustible}>
               <Text style={s.btnText}>Guardar</Text>
@@ -110,12 +110,7 @@ export default function CombustibleScreen({ route }) {
       <View style={s.card}>
         <Text style={s.title}>Combustible</Text>
 
-        <TextInput
-          placeholder="Filtrar por tipo (Gasolina, Gasoil)"
-          value={filtroTipo}
-          onChangeText={setFiltroTipo}
-          style={s.input}
-        />
+        <TextInput placeholder="Filtrar por tipo (aceite/combustible)" value={filtroTipo} onChangeText={setFiltroTipo} style={s.input} placeholderTextColor={COLORS.textMuted || '#110101'}/>
 
         <TouchableOpacity style={s.btn} onPress={() => setVisible(true)}>
           <Text style={s.btnText}>+ Agregar Combustible</Text>
@@ -186,7 +181,8 @@ const s = StyleSheet.create({
     paddingHorizontal: 12,
     marginBottom: 10,
     color: COLORS.textPrimary,
-    backgroundColor: "#fafafa"
+    backgroundColor: "#fafafa",
+    textAlign: 'center'
   },
 
   btn: {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import apiClient from '../../services/apiClient'
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { COLORS, FONTS } from '../../core/theme';
 
 export default function ActivacionScreen({ route, navigation }) {
@@ -15,15 +15,14 @@ export default function ActivacionScreen({ route, navigation }) {
     try {
 
       if (contraseña.trim().length < 6) {
-        console.log('Error: La contraseña debe de tener mas de 6 caracteres');
+        Alert.alert('Error: La contraseña debe de tener mas de 6 caracteres');
         return;
       }
 
       if (confirmar !== contraseña) {
-        console.log('Error: La contraseña no coincide');
+        Alert.alert('Error: La contraseña no coincide');
         return;
       }
-
 
       setLoading(true)
 
@@ -43,8 +42,6 @@ export default function ActivacionScreen({ route, navigation }) {
         }
       );
 
-      console.log(response.data);
-
       alert('Cuenta activada');
 
       navigation.navigate('Auth', {
@@ -60,21 +57,11 @@ export default function ActivacionScreen({ route, navigation }) {
 
   };
 
-
   return (
     <View style={s.screen}>
-      <Text style={s.title}>ActivacionScreen</Text>
+      <Text style={s.title}>Activación</Text>
 
-      <View style={{
-        width: 340,
-        height: 'auto',
-        backgroundColor: 'white',
-        borderWidth: 1.5,
-        marginTop: 15,
-        paddingLeft: 5,
-        display: 'flex',
-        alignItems: 'center'
-      }}>
+      <View style={s.card}>
 
         <View style={{
           display: 'flex',
@@ -84,42 +71,81 @@ export default function ActivacionScreen({ route, navigation }) {
           padding: 15
         }}>
 
+          <TextInput style={s.inputHalf} placeholder='Contraseña' value={contraseña} onChangeText={setContraseña} secureTextEntry />
 
-          <TextInput style={{
-            borderWidth: 2,
-            width: '50%',
-            textAlign: 'center'
-          }}
-            placeholder='Introducir contraseña'
-            value={contraseña}
-            onChangeText={setContraseña}
-          ></TextInput>
-
-          <TextInput style={{
-            borderWidth: 2,
-            width: '50%',
-            textAlign: 'center'
-          }}
-            placeholder='Confirmar Contraseña'
-            value={confirmar}
-            onChangeText={setConfirmar}
-          ></TextInput>
+          <TextInput style={s.inputHalf} placeholder='Confirmar' value={confirmar} onChangeText={setConfirmar} secureTextEntry />
 
         </View>
 
-        <TouchableOpacity disabled={loading} onPress={activarCuenta} style={s.TouchableOpacity}>
-          <Text>Registrate</Text>
+        <TouchableOpacity disabled={loading} onPress={activarCuenta} style={s.button}>
+          <Text style={s.buttonText}>
+            {loading ? 'Cargando...' : 'Activar'}
+          </Text>
         </TouchableOpacity>
 
       </View>
-      <Text style={s.sub}>Pendiente de implementacion</Text>
     </View>
   );
 }
 
 const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: COLORS.background, alignItems: 'center', justifyContent: 'center' },
-  title: { fontSize: FONTS.sizes.lg, fontWeight: '700', color: COLORS.textPrimary },
-  sub: { fontSize: FONTS.sizes.sm, color: COLORS.textMuted, marginTop: 8 },
-  TouchableOpacity: { backgroundColor: COLORS.primaryLight, justifyContent: 'center', alignItems: 'center', marginBottom: 10, width: '50%', borderRadius: 15, height: 40 }
+  screen: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16
+  },
+
+  title: {
+    fontSize: FONTS.sizes.lg,
+    fontWeight: '700',
+    color: COLORS.textPrimary,
+    marginBottom: 10
+  },
+
+  card: {
+    width: 340,
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    marginTop: 15,
+    alignItems: 'center',
+
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 }
+  },
+
+  inputHalf: {
+    borderWidth: 1.5,
+    borderColor: COLORS.primaryLight,
+    borderRadius: 10,
+    paddingVertical: 10,
+    width: '48%',
+    textAlign: 'center',
+    fontSize: FONTS.sizes.sm
+  },
+
+  button: {
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+    width: '60%',
+    borderRadius: 12,
+    height: 40
+  },
+
+  buttonText: {
+    color: '#fff',
+    fontWeight: '600'
+  },
+
+  sub: {
+    fontSize: FONTS.sizes.sm,
+    color: COLORS.textMuted,
+    marginTop: 12
+  }
 });

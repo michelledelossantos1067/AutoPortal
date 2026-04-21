@@ -6,76 +6,100 @@ const BASE_URL = 'https://taller-itla.ia3x.com/api';
 const apiClient = axios.create({
     baseURL: BASE_URL,
     timeout: 15000,
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json'
+    }
 });
 
-apiClient.interceptors.request.use(
-    async config => {
-        try {
-            const token = await SecureStore.getItemAsync('token');
-            if (token) config.headers.Authorization = `Bearer ${token}`;
-        } catch (_) { }
-        return config;
-    },
-    error => Promise.reject(error),
-);
+apiClient.interceptors.request.use(async (config) => {
+    const token = await SecureStore.getItemAsync('token');
+
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+});
 
 let isRefreshing = false;
-let failedQueue = [];
-
-const processQueue = (error, token = null) => {
-    failedQueue.forEach(p => (error ? p.reject(error) : p.resolve(token)));
-    failedQueue = [];
-};
+let refreshPromise = null;
 
 apiClient.interceptors.response.use(
     res => res,
     async error => {
         const orig = error.config;
 
-        if (error.response?.status === 401 && !orig._retry) {
-            if (isRefreshing) {
-                return new Promise((resolve, reject) => failedQueue.push({ resolve, reject }))
-                    .then(token => { orig.headers.Authorization = `Bearer ${token}`; return apiClient(orig); });
-            }
+        if (error.response?.status !== 401 || orig._retry) {
+            return Promise.reject(error);
+        }
 
-            orig._retry = true;
+        const isAuthRoute =
+            orig.url?.includes('/auth/login') ||
+            orig.url?.includes('/auth/cambiar-clave') ||
+            orig.url?.includes('/auth/refresh');
+
+        if (isAuthRoute) {
+            return Promise.reject(error);
+        }
+
+        orig._retry = true;
+
+        if (!isRefreshing) {
             isRefreshing = true;
 
-            try {
+            refreshPromise = (async () => {
                 const refreshToken = await SecureStore.getItemAsync('refreshToken');
+
                 if (!refreshToken) throw new Error('No refresh token');
 
-                const { data } = await axios.post(`${BASE_URL}/auth/refresh`, { refreshToken });
-                const payload = data?.data ?? data ?? {};
-                const newToken = payload?.token ?? payload?.accessToken;
-                const newRefreshToken = payload?.refreshToken ?? payload?.refresh_token ?? payload?.refreshtoken ?? refreshToken;
+                const { data } = await axios.post(
+                    `${BASE_URL}/auth/refresh`,
+                    new URLSearchParams({
+                        datax: JSON.stringify({ refreshToken })
+                    }),
+                    {
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        }
+                    }
+                );
 
-                if (!newToken) {
-                    throw new Error('Refresh response no incluyó token');
-                }
+                const payload = data?.data ?? data ?? {};
+
+                const newToken = payload?.token ?? payload?.accessToken;
+                const newRefreshToken =
+                    payload?.refreshToken ??
+                    payload?.refresh_token ??
+                    payload?.refreshtoken;
+
+                if (!newToken) throw new Error('No token refresh');
 
                 await SecureStore.setItemAsync('token', newToken);
+
                 if (newRefreshToken) {
                     await SecureStore.setItemAsync('refreshToken', newRefreshToken);
                 }
 
-                processQueue(null, newToken);
-                orig.headers.Authorization = `Bearer ${newToken}`;
-                return apiClient(orig);
-            } catch (err) {
-                processQueue(err, null);
-                await SecureStore.deleteItemAsync('token');
-                await SecureStore.deleteItemAsync('refreshToken');
-                await SecureStore.deleteItemAsync('usuario');
-                return Promise.reject(err);
-            } finally {
+                return newToken;
+            })().finally(() => {
                 isRefreshing = false;
-            }
+            });
         }
 
-        return Promise.reject(error);
-    },
+        try {
+            const token = await refreshPromise;
+
+            orig.headers.Authorization = `Bearer ${token}`;
+
+            return apiClient(orig);
+        } catch (err) {
+            await SecureStore.deleteItemAsync('token');
+            await SecureStore.deleteItemAsync('refreshToken');
+
+            return Promise.reject(err);
+        }
+    }
 );
 
 export default apiClient;

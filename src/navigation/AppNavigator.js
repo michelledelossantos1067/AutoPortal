@@ -9,6 +9,7 @@ import { COLORS } from '../core/theme';
 import LoginScreen from '../screens/auth/LoginScreen';
 import RegistroScreen from '../screens/auth/RegistroScreen';
 import ActivacionScreen from '../screens/auth/ActivacionScreen';
+import Contrasena from '../screens/auth/ContrasenaScreen';
 import RecuperarScreen from '../screens/auth/RecuperarScreen';
 import HomeScreen from '../screens/home/HomeScreen';
 import NoticiasScreen from '../screens/noticias/NoticiasScreen';
@@ -46,7 +47,7 @@ const RootNavigator = () => {
     return (
         <RootStack.Navigator screenOptions={{ headerShown: false }}>
 
-      
+
             <RootStack.Screen name="Main" component={MainStack} />
 
             {!isLoggedIn && (
@@ -65,8 +66,7 @@ const HEADER = {
 
 const AuthStack = () => (
 
-
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator screenOptions={HEADER}>
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Registro" component={RegistroScreen} />
         <Stack.Screen name="Activacion" component={ActivacionScreen} />
@@ -76,7 +76,8 @@ const AuthStack = () => (
 
 const MainStack = () => (
     <Stack.Navigator screenOptions={HEADER}>
-        <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'AutoZone ITLA' }} />
+        <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'AutoPortal' }} />
+        <Stack.Screen name="Cambiar Contraseña" component={Contrasena} />
         <Stack.Screen name="Noticias" component={NoticiasScreen} options={{ title: 'Noticias' }} />
         <Stack.Screen name="DetalleNoticia" component={DetalleNoticiaScreen} options={{ title: 'Noticia' }} />
         <Stack.Screen name="Videos" component={VideosScreen} options={{ title: 'Videos' }} />

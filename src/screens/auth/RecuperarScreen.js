@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import apiClient from '../../services/apiClient'
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { COLORS, FONTS } from '../../core/theme';
 
 export default function RecuperarScreen({ navigation }) {
@@ -14,11 +14,9 @@ export default function RecuperarScreen({ navigation }) {
     try {
 
       if (!matricula.trim()) {
-
-        console.log("Error: Debe de introducir data")
+        Alert.alert("Error: Debe de introducir data")
         return
       }
-
 
       setLoading(true);
 
@@ -39,7 +37,7 @@ export default function RecuperarScreen({ navigation }) {
 
       const mensaje = response.data?.message;
 
-      alert(mensaje); 
+      alert(mensaje);
 
       navigation.navigate('Auth', { screen: 'Login' });
 
@@ -63,16 +61,7 @@ export default function RecuperarScreen({ navigation }) {
     <View style={s.screen}>
       <Text style={s.title}>Recuperar contraseña</Text>
 
-      <View style={{
-        width: 340,
-        height: 'auto',
-        backgroundColor: 'white',
-        borderWidth: 1.5,
-        marginTop: 15,
-        paddingLeft: 5,
-        display: 'flex',
-        alignItems: 'center'
-      }}>
+      <View style={s.card}>
 
         <View style={{
           display: 'flex',
@@ -82,32 +71,80 @@ export default function RecuperarScreen({ navigation }) {
           padding: 15
         }}>
 
-
-          <TextInput style={{
-            borderWidth: 2,
-            width: '100%',
-            textAlign: 'center'
-          }}
-            placeholder='Introducir Matricula'
-            value={matricula}
-            onChangeText={setMatricula}
-          ></TextInput>
+          <TextInput style={s.input} placeholder='Introducir Matricula' value={matricula} onChangeText={setMatricula} placeholderTextColor={COLORS.textMuted || '#110101'}/>
 
         </View>
 
-        <TouchableOpacity disabled={loading} onPress={guardarRegistro} style={s.TouchableOpacity}>
-          <Text>Registrate</Text>
+        <TouchableOpacity disabled={loading} onPress={guardarRegistro} style={s.button}>
+          <Text style={s.buttonText}>
+            {loading ? 'Cargando...' : 'Recuperar'}
+          </Text>
         </TouchableOpacity>
 
       </View>
-      <Text style={s.sub}>Pendiente de implementacion</Text>
+      
     </View>
   );
 }
 
 const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: COLORS.background, alignItems: 'center', justifyContent: 'center' },
-  title: { fontSize: FONTS.sizes.lg, fontWeight: '700', color: COLORS.textPrimary },
-  sub: { fontSize: FONTS.sizes.sm, color: COLORS.textMuted, marginTop: 8 },
-  TouchableOpacity: { backgroundColor: COLORS.primaryLight, justifyContent: 'center', alignItems: 'center', marginBottom: 10, width: '50%', borderRadius: 15, height: 40 }
+  screen: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16
+  },
+
+  title: {
+    fontSize: FONTS.sizes.lg,
+    fontWeight: '700',
+    color: COLORS.textPrimary,
+    marginBottom: 10
+  },
+
+  card: {
+    width: 340,
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    marginTop: 15,
+    alignItems: 'center',
+
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 }
+  },
+
+  input: {
+    borderWidth: 1.5,
+    borderColor: COLORS.primaryLight,
+    borderRadius: 10,
+    paddingVertical: 10,
+    width: '100%',
+    textAlign: 'center',
+    fontSize: FONTS.sizes.sm
+  },
+
+  button: {
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+    width: '60%',
+    borderRadius: 12,
+    height: 40
+  },
+
+  buttonText: {
+    color: '#fff',
+    fontWeight: '600'
+  },
+
+  sub: {
+    fontSize: FONTS.sizes.sm,
+    color: COLORS.textMuted,
+    marginTop: 12
+  }
 });

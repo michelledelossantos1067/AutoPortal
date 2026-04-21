@@ -48,14 +48,14 @@ export default function Catalogo({ navigation }) {
 
         <View style={s.filterSection}>
           <View style={s.row}>
-            <TextInput style={s.textinput} placeholder="Marca" value={marca} onChangeText={setMarca} />
-            <TextInput style={s.textinput} placeholder="Modelo" value={modelo} onChangeText={setModelo} />
+            <TextInput style={s.textinput} placeholder="Marca" value={marca} onChangeText={setMarca} placeholderTextColor={COLORS.textMuted || '#110101'}/>
+            <TextInput style={s.textinput} placeholder="Modelo" value={modelo} onChangeText={setModelo} placeholderTextColor={COLORS.textMuted || '#110101'}/>
           </View>
 
-          <TextInput style={s.textinput2} placeholder="Año" keyboardType="numeric" value={anio} onChangeText={setAnio} />
+          <TextInput style={s.textinput2} placeholder="Año" keyboardType="numeric" value={anio} onChangeText={setAnio} placeholderTextColor={COLORS.textMuted || '#110101'}/>
           <View style={s.row}>
-            <TextInput style={[s.textinput, {width: '48%'}]} placeholder="Min $" keyboardType="numeric" value={precioMin} onChangeText={setPrecioMin} />
-            <TextInput style={[s.textinput, {width: '48%'}]} placeholder="Max $" keyboardType="numeric" value={precioMax} onChangeText={setPrecioMax} />
+            <TextInput style={[s.textinput, {width: '48%'}]} placeholder="Min $" keyboardType="numeric" value={precioMin} onChangeText={setPrecioMin} placeholderTextColor={COLORS.textMuted || '#110101'}/>
+            <TextInput style={[s.textinput, {width: '48%'}]} placeholder="Max $" keyboardType="numeric" value={precioMax} onChangeText={setPrecioMax} placeholderTextColor={COLORS.textMuted || '#110101'}/>
           </View>
 
           <TouchableOpacity onPress={obtenerCatalogo} style={s.button}>

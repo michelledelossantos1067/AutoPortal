@@ -84,6 +84,7 @@ export default function CrearTemaScreen({ navigation }) {
         value={titulo}
         onChangeText={setTitulo}
         maxLength={200}
+        placeholderTextColor={COLORS.textMuted || '#110101'}
       />
 
       <Text style={s.label}>Descripción *</Text>
@@ -96,6 +97,7 @@ export default function CrearTemaScreen({ navigation }) {
         numberOfLines={6}
         textAlignVertical="top"
         maxLength={2000}
+        placeholderTextColor={COLORS.textMuted || '#110101'}
       />
 
       <Text style={s.label}>Vehículo *</Text>
